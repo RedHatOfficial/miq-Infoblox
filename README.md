@@ -1,8 +1,8 @@
-# miq-Utilities
+# miq-infoblox
 ManageIQ Automate Domain of code for integrating Infoblox into the provisioning process
 
 # Table of Contents
-* [miq-Utilities](#miq-utilities)
+* [miq-Infoblox](#miq-infoblox)
 * [Table of Contents](#table-of-contents)
 * [Install](#install)
 
