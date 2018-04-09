@@ -1,0 +1,13 @@
+---
+object_type: domain
+version: 1.0
+object:
+  attributes:
+    name: RedHatConsulting_Infoblox
+    description: 
+    display_name: 
+    priority: 8
+    enabled: true
+    tenant_id: 42000000000001
+    source: user
+    top_level_namespace: 
