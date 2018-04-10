@@ -133,7 +133,7 @@ begin
     if !infoblox_host_records.empty?
       infoblox_host_records.each do |infoblox_host_record|
         infoblox_host_record_ref = infoblox_host_record['_ref']
-        $evm.log(:info, "Delete Infroblox host record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>") if @DEBUG
+        $evm.log(:info, "Delete Infoblox host record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>") if @DEBUG
         
         # delete the infoblox host record
         begin
