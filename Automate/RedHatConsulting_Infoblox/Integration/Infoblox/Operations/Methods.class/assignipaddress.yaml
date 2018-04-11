@@ -10,3 +10,4 @@ object:
   fields:
   - execute:
       value: assign_ip
+      collect: "/destination_ip = destination_ip"
