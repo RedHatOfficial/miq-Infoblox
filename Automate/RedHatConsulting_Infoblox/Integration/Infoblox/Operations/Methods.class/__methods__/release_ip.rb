@@ -1,9 +1,5 @@
 # Deletes a host record in Infoblox for the given VM associated with a provisioning request, which releases the associated IP address
 #
-# EXPECTED
-#   EVM ROOT
-#     miq_provision - VM Provisioning request to release IP address for
-#
 @DEBUG = false
 
 require 'rest-client'
@@ -22,12 +18,86 @@ def error(msg)
   exit MIQ_STOP
 end
 
-# Notify and log a warning message.
+def dump_object(object_string, object)
+  $evm.log("info", "Listing #{object_string} Attributes:") 
+  object.attributes.sort.each { |k, v| $evm.log("info", "\t#{k}: #{v}") }
+  $evm.log("info", "===========================================") 
+end
+
+def dump_current
+  $evm.log("info", "Listing Current Object Attributes:") 
+  $evm.current.attributes.sort.each { |k, v| $evm.log("info", "\t#{k}: #{v}") }
+  $evm.log("info", "===========================================") 
+end
+
+def dump_root
+  $evm.log("info", "Listing Root Object Attributes:") 
+  $evm.root.attributes.sort.each { |k, v| $evm.log("info", "\t#{k}: #{v}") }
+  $evm.log("info", "===========================================") 
+end
+
+# Function for getting the current VM and associated options based on the vmdb_object_type.
 #
-# @param msg Message to warn with
-def warn(msg)
-  $evm.create_notification(:level => 'warning', :message => msg)
-  $evm.log(:warn, msg)
+# Supported vmdb_object_types
+#   * miq_provision
+#   * vm
+#   * automation_task
+#
+# @return vm,options
+def get_vm_and_options()
+  $evm.log(:info, "$evm.root['vmdb_object_type'] => '#{$evm.root['vmdb_object_type']}'.")
+  case $evm.root['vmdb_object_type']
+    when 'miq_provision'
+      # get root object
+      $evm.log(:info, "Get VM and dialog attributes from $evm.root['miq_provision']") if @DEBUG
+      miq_provision = $evm.root['miq_provision']
+      dump_object('miq_provision', miq_provision) if @DEBUG
+      
+      # get VM
+      vm = miq_provision.vm
+    
+      # get options
+      options = miq_provision.options
+      #merge the ws_values, dialog, top level options into one list to make it easier to search
+      options = options.merge(options[:ws_values]) if options[:ws_values]
+      options = options.merge(options[:dialog])    if options[:dialog]
+    when 'vm'
+      # get root objet & VM
+      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
+      vm = get_param(:vm)
+      dump_object('vm', vm) if @DEBUG
+    
+      # get options
+      options = $evm.root.attributes
+      #merge the ws_values, dialog, top level options into one list to make it easier to search
+      options = options.merge(options[:ws_values]) if options[:ws_values]
+      options = options.merge(options[:dialog])    if options[:dialog]
+    when 'automation_task'
+      # get root objet
+      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
+      automation_task = $evm.root['automation_task']
+      dump_object('automation_task', automation_task) if @DEBUG
+      
+      # get VM
+      vm  = get_param(:vm)
+      
+      # get options
+      options = get_param(:options)
+      options = JSON.load(options)     if options && options.class == String
+      options = options.symbolize_keys if options
+      #merge the ws_values, dialog, top level options into one list to make it easier to search
+      options = options.merge(options[:ws_values]) if options[:ws_values]
+      options = options.merge(options[:dialog])    if options[:dialog]
+    else
+      error("Can not handle vmdb_object_type: #{$evm.root['vmdb_object_type']}")
+  end
+  
+  # standerdize the option keys
+  options = options.symbolize_keys()
+  
+  $evm.log(:info, "vm      => #{vm}")      if @DEBUG
+  $evm.log(:info, "options => #{options}") if @DEBUG
+  return vm,options
 end
 
 # There are many ways to attempt to pass parameters in Automate.
@@ -88,34 +158,11 @@ def infoblox_request(action, path, payload=nil)
 end
 
 begin
-  $evm.log(:info, "$evm.root['vmdb_object_type'] => '#{$evm.root['vmdb_object_type']}'") if @DEBUG
-  case $evm.root['vmdb_object_type']
-    when 'miq_provision'
-      $evm.log(:info, "Get VM and dialog attributes from $evm.root['miq_provision']") if @DEBUG
-      miq_provision = $evm.root['miq_provision']
-      vm            = miq_provision.vm
-      options       = miq_provision.options
-      
-      #merge the ws_values, dialog, top level options into one list to make it easier to search
-      options = options.merge(options[:ws_values]) if options[:ws_values]
-      options = options.merge(options[:dialog])    if options[:dialog]
-    when 'vm'
-      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
-      vm      = get_param(:vm)
-      options = $evm.root.attributes
-      
-      #merge the ws_values, dialog, top level options into one list to make it easier to search
-      options = options.merge(options[:ws_values]) if options[:ws_values]
-      options = options.merge(options[:dialog])    if options[:dialog]
-    when 'automation_task'
-      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
-      automation_task = $evm.root['automation_task']
-      dump_object("automation_task", automation_task) if @DEBUG
-      
-      vm  = get_param(:vm)
-  end
-  error('VM parameter not found') if vm.nil?
-  $evm.log(:info, "vm => #{vm}") if @DEBUG
+  dump_root()    if @DEBUG
+  dump_current() if @DEBUG
+  
+  # get the VM and options
+  vm,options = get_vm_and_options()
 
   if INFOBLOX_CONFIG.nil? or INFOBLOX_CONFIG['server'] == 'infoblox.example.com'
     error("Infoblox configuration must be defined")
