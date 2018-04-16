@@ -66,8 +66,8 @@ def get_vm_and_options()
       options = options.merge(options[:ws_values]) if options[:ws_values]
       options = options.merge(options[:dialog])    if options[:dialog]
     when 'vm'
-      # get root objet & VM
-      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
+      # get root object & VM
+      $evm.log(:info, "Get VM from parameter and dialog attributes form $evm.root") if @DEBUG
       vm = get_param(:vm)
       dump_object('vm', vm) if @DEBUG
     
@@ -77,8 +77,8 @@ def get_vm_and_options()
       options = options.merge(options[:ws_values]) if options[:ws_values]
       options = options.merge(options[:dialog])    if options[:dialog]
     when 'automation_task'
-      # get root objet
-      $evm.log(:info, "Get VM from paramater and dialog attributes form $evm.root") if @DEBUG
+      # get root object
+      $evm.log(:info, "Get VM from parameter and dialog attributes form $evm.root") if @DEBUG
       automation_task = $evm.root['automation_task']
       dump_object('automation_task', automation_task) if @DEBUG
       
@@ -96,7 +96,7 @@ def get_vm_and_options()
       error("Can not handle vmdb_object_type: #{$evm.root['vmdb_object_type']}")
   end
   
-  # standerdize the option keys
+  # standardize the option keys
   options = options.symbolize_keys()
   
   $evm.log(:info, "vm      => #{vm}")      if @DEBUG
