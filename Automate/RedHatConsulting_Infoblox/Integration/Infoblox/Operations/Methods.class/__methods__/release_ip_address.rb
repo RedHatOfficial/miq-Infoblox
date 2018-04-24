@@ -1,5 +1,7 @@
 # Deletes a host record in Infoblox for the given VM associated with a provisioning request, which releases the associated IP address
 #
+# @sets released_ip_address String IP address released from DDI provider
+#
 @DEBUG = false
 
 require 'rest-client'
@@ -34,6 +36,14 @@ def dump_root
   $evm.log("info", "Listing Root Object Attributes:") 
   $evm.root.attributes.sort.each { |k, v| $evm.log("info", "\t#{k}: #{v}") }
   $evm.log("info", "===========================================") 
+end
+
+# Notify and log a warning message.
+#
+# @param msg Message to warn with
+def warn(msg)
+  $evm.create_notification(:level => 'warning', :message => msg)
+  $evm.log(:warn, msg)
 end
 
 # Function for getting the current VM and associated options based on the vmdb_object_type.
@@ -184,8 +194,17 @@ begin
         
         # delete the infoblox host record
         begin
-          infoblox_request(:delete, infoblox_host_record_ref)
+          delete_result = infoblox_request(:delete, infoblox_host_record_ref)
           $evm.log(:info, "Deleted Infoblox record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>")
+          
+          # get IP that was released
+          released_ip_address =  delete_result["ipv4addrs"].first["ipv4addr"] || nil
+          
+          # save the aquired IP for use later
+          $evm.object['released_ip_address'] = ip
+          $evm.set_state_var(:released_ip_address, ip)
+          $evm.log(:info, "$evm.object['released_ip_address'] => #{$evm.object['released_ip_address']}") if @DEBUG
+          
         rescue => delete_err
           warn("Error deleting Infoblox host record for hostname <#{vm_hostname}>. Ignoring & Skipping. #{delete_err}")
         end

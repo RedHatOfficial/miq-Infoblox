@@ -3,7 +3,7 @@ object_type: method
 version: 1.0
 object:
   attributes:
-    name: release_ip
+    name: release_ip_address
     display_name: ReleaseIPAddress
     description: 
     scope: instance

@@ -9,4 +9,4 @@ object:
     description: 
   fields:
   - execute:
-      value: release_ip
+      value: release_ip_address
