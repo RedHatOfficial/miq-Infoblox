@@ -166,6 +166,11 @@ def get_network_configuration(network_name)
     begin
       escaped_network_name                  = network_name.gsub(/[^a-zA-Z0-9_\.\-]/, '_')
       @network_configurations[network_name] = $evm.instantiate("#{NETWORK_CONFIGURATION_URI}/#{escaped_network_name}")
+      
+      if escaped_network_name =~ /^dvs_/ && @network_configurations[network_name]['network_address_space'].blank?
+        escaped_network_name                  = escaped_network_name[/^dvs_(.*)/, 1]
+        @network_configurations[network_name] = $evm.instantiate("#{NETWORK_CONFIGURATION_URI}/#{escaped_network_name}")
+      end
     rescue
       @missing_network_configurations[network_name] = "WARN: No network configuration exists"
       $evm.log(:warn, "No network configuration for Network <#{network_name}> (escaped <#{escaped_network_name}>) exists")
@@ -219,7 +224,7 @@ begin
     error("Infoblox configuration must be defined")
   else
     # get the network configuration
-    network_name = options[:network_name] || options[:dialog_network_name] || get_param(:network_name) || get_param(:dialog_network_name)
+    network_name = get_param(:network_name) || get_param(:dialog_network_name) || options[:network_name] || options[:dialog_network_name]
     $evm.log(:info, "network_name => #{network_name}") if @DEBUG
     network_configuration = get_network_configuration(network_name)
     $evm.log(:info, "network_configuration => #{network_configuration}") if @DEBUG
