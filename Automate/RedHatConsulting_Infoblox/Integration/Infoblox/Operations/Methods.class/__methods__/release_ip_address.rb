@@ -198,7 +198,7 @@ begin
           $evm.log(:info, "Deleted Infoblox record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>")
           
           # get IP that was released
-          released_ip_address =  delete_result["ipv4addrs"].first["ipv4addr"] || nil
+          released_ip_address =  delete_result["ipv4addrs"].first.blank? ? nil : delete_result["ipv4addrs"].first["ipv4addr"]
           
           # save the aquired IP for use later
           $evm.object['released_ip_address'] = ip
