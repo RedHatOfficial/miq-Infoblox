@@ -189,6 +189,9 @@ begin
     # else warn that no host records found to delete and move on.
     if !infoblox_host_records.empty?
       infoblox_host_records.each do |infoblox_host_record|
+        $evm.log(:info, "infoblox_host_record => #{infoblox_host_record}") if @DEBUG
+        
+        # get the ref of the record to delete
         infoblox_host_record_ref = infoblox_host_record['_ref']
         $evm.log(:info, "Delete Infoblox host record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>") if @DEBUG
         
@@ -196,15 +199,15 @@ begin
         begin
           delete_result = infoblox_request(:delete, infoblox_host_record_ref)
           $evm.log(:info, "Deleted Infoblox record <#{infoblox_host_record_ref}> for hostname <#{vm_hostname}>")
+          $evm.log(:info, "delete_result => #{delete_result}") if @DEBUG
           
           # get IP that was released
-          released_ip_address =  delete_result["ipv4addrs"].first.blank? ? nil : delete_result["ipv4addrs"].first["ipv4addr"]
+          released_ip_address =  infoblox_host_record["ipv4addrs"].first.blank? ? nil : infoblox_host_record["ipv4addrs"].first["ipv4addr"]
           
-          # save the aquired IP for use later
-          $evm.object['released_ip_address'] = ip
-          $evm.set_state_var(:released_ip_address, ip)
+          # save the released IP for use later
+          $evm.object['released_ip_address'] = released_ip_address
+          $evm.set_state_var(:released_ip_address, released_ip_address)
           $evm.log(:info, "$evm.object['released_ip_address'] => #{$evm.object['released_ip_address']}") if @DEBUG
-          
         rescue => delete_err
           warn("Error deleting Infoblox host record for hostname <#{vm_hostname}>. Ignoring & Skipping. #{delete_err}")
         end
