@@ -3,14 +3,13 @@ object_type: method
 version: 1.0
 object:
   attributes:
-    name: release_ip_address
-    display_name: ReleaseIPAddress
+    name: InfobloxCore
+    display_name: Infoblox Core
     description: 
     scope: instance
     language: ruby
     location: inline
     embedded_methods:
     - "/StdLib/Core/Core"
-    - "/StdLib/Core/InfobloxCore"
     options: {}
   inputs: []

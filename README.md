@@ -6,6 +6,9 @@ ManageIQ Automate Domain of code for integrating Infoblox into the provisioning 
 * [Table of Contents](#table-of-contents)
 * [Install](#install)
 
+# Dependencies
+
+This Domain requires that the [miq-Utilities](https://github.com/RedHatOfficial/miq-Utilities) domain is also installed.
 
 # Install
 0. Install dependencies
