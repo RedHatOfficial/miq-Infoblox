@@ -82,7 +82,7 @@ module RedHatConsulting_Infoblox
 
             # Get the network configuration for a given network
             #
-            # @param network_name Name of the network to get the configuraiton for
+            # @param network_name Name of the network to get the configuration for
             # @return Hash Configuration information about the given network
             #                network_purpose
             #                network_address_space
